@@ -41,22 +41,53 @@ object ParallelParenthesesBalancing {
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def balance(chars: Array[Char]): Boolean = {
-    ???
+    @tailrec
+    def balanceChars(subChar: Array[Char], noOfOpenedP: Int, noOfClosedP: Int): Boolean = {
+      //TODO double check this ... i had a bug that is supposed to be fixed bad test coverage from the previous assignment
+      if (noOfOpenedP != noOfClosedP && subChar.isEmpty)
+        false
+      else if (noOfClosedP == noOfOpenedP && subChar.isEmpty)
+        true
+      else if (subChar.head.equals('('))
+        balanceChars(subChar.tail, noOfOpenedP + 1, noOfClosedP)
+      else if (subChar.head.equals(')') && noOfOpenedP <1)
+        false
+      else if(subChar.head.equals(')'))
+        balanceChars(subChar.tail, noOfOpenedP, noOfClosedP + 1)
+      else
+        balanceChars(subChar.tail, noOfOpenedP, noOfClosedP)
+    }
+    balanceChars(chars,0,0)
+
   }
 
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def parBalance(chars: Array[Char], threshold: Int): Boolean = {
 
-    def traverse(idx: Int, until: Int, arg1: Int, arg2: Int) /*: ???*/ = {
-      ???
+    def traverse(idx: Int, until: Int, arg1: Int, arg2: Int) : (Int, Int) = {
+      if(idx>= until) (arg1, arg2)
+      else{
+        chars(idx) match {
+          case ')' => traverse(idx+1,until, arg1-1, arg2+1)
+          case '(' => traverse(idx+1, until, arg1+1, arg2-1)
+          case _ => traverse(idx+1, until, arg1, arg2)
+
+        }
+      }
     }
 
-    def reduce(from: Int, until: Int) /*: ???*/ = {
-      ???
+    def reduce(from: Int, until: Int) : (Int,Int)= {
+      if (until - from <= threshold) traverse(from, until, 0, 0)
+      else {
+        val mid = (from + until) / 2
+        val ((l1, r1), (l2,r2)) = parallel(reduce(from, mid), reduce(mid, until))
+
+        (l1+l2,r1+r2)
+      }
     }
 
-    reduce(0, chars.length) == ???
+    reduce(0, chars.length) == (0,0)
   }
 
   // For those who want more:
