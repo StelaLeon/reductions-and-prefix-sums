@@ -61,33 +61,47 @@ object ParallelParenthesesBalancing {
 
   }
 
+  def _andPar(no:Int, l: Boolean, r: Boolean): Boolean = {
+    /** this should be more dynamic and not depend on the order
+      * NOT COOL !!! maybe instead we should reduce the array bottom-> top
+      */
+
+    if (l == true && no>=0) true
+    else false
+  }
   /** Returns `true` iff the parentheses in the input `chars` are balanced.
    */
   def parBalance(chars: Array[Char], threshold: Int): Boolean = {
 
-    def traverse(idx: Int, until: Int, arg1: Int, arg2: Int) : (Int, Int) = {
+    def traverse(idx: Int, until: Int, arg1: Int, arg2: Boolean) : (Int, Boolean) = {
+
       if(idx>= until) (arg1, arg2)
       else{
         chars(idx) match {
-          case ')' => traverse(idx+1,until, arg1-1, arg2+1)
-          case '(' => traverse(idx+1, until, arg1+1, arg2-1)
+          case ')' => {
+            traverse(idx+1,until, arg1-1, _andPar(arg1-1,arg2, false))
+          }
+          case '(' => {
+            traverse(idx+1, until, arg1+1, _andPar(arg1+1,arg2, true))
+          }
           case _ => traverse(idx+1, until, arg1, arg2)
 
         }
       }
     }
 
-    def reduce(from: Int, until: Int) : (Int,Int)= {
-      if (until - from <= threshold) traverse(from, until, 0, 0)
+    def reduce(from: Int, until: Int) : (Int,Boolean)= {
+      if (until - from <= threshold) traverse(from, until, 0, true)
       else {
         val mid = (from + until) / 2
-        val ((l1, r1), (l2,r2)) = parallel(reduce(from, mid), reduce(mid, until))
+        val (l1, r1) = reduce(from, mid)
+        val (l2, r2) = reduce(mid, until)
 
-        (l1+l2,r1+r2)
+        (l1+l2,_andPar(l1+l2,r1,r2))
       }
     }
 
-    reduce(0, chars.length) == (0,0)
+    reduce(0, chars.length) == (0,true)
   }
 
   // For those who want more:
